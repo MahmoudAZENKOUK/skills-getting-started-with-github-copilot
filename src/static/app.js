@@ -20,12 +20,78 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        // Participants markup (pretty chips with remove buttons)
+        const participantsHtml =
+          details.participants && details.participants.length > 0
+            ? `<ul class="participants-list">${details.participants
+                .map(
+                  (p) =>
+                    `<li><span class="participant-email">${p}</span><button class="remove-participant" data-email="${p}" title="Remove participant">✖</button></li>`
+                )
+                .join("")}</ul>`
+            : `<p class="no-participants">No participants yet</p>`;
+
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          <p class="availability"><strong>Availability:</strong> <span class="spots-count">${spotsLeft}</span> spots left</p>
+          <div class="participants-section">
+            <strong>Participants:</strong>
+            ${participantsHtml}
+          </div>
         `;
+
+        // Append card then wire up remove handlers via event delegation
+        activitiesList.appendChild(activityCard);
+
+        // Add option to select dropdown
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        activitySelect.appendChild(option);
+
+        // Event delegation for remove buttons inside this card
+        activityCard.addEventListener("click", async (e) => {
+          const btn = e.target.closest(".remove-participant");
+          if (!btn) return;
+          const email = btn.dataset.email;
+          if (!email) return;
+
+          btn.disabled = true;
+          try {
+            const resp = await fetch(
+              `/activities/${encodeURIComponent(name)}/signup?email=${encodeURIComponent(email)}`,
+              { method: "DELETE" }
+            );
+            const data = await resp.json();
+            if (resp.ok) {
+              const li = btn.closest("li");
+              if (li) li.remove();
+
+              // Update spots count
+              const participantsCount = activityCard.querySelectorAll(".participants-list li").length;
+              const spots = details.max_participants - participantsCount;
+              const spotsSpan = activityCard.querySelector(".spots-count");
+              if (spotsSpan) spotsSpan.textContent = String(spots);
+            } else {
+              messageDiv.textContent = data.detail || "Failed to remove participant";
+              messageDiv.className = "error";
+              messageDiv.classList.remove("hidden");
+              setTimeout(() => messageDiv.classList.add("hidden"), 4000);
+            }
+          } catch (err) {
+            console.error("Error removing participant:", err);
+            messageDiv.textContent = "Failed to remove participant";
+            messageDiv.className = "error";
+            messageDiv.classList.remove("hidden");
+            setTimeout(() => messageDiv.classList.add("hidden"), 4000);
+          } finally {
+            btn.disabled = false;
+          }
+        });
+        // continue to next iteration
+        return;
 
         activitiesList.appendChild(activityCard);
 
