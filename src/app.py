@@ -38,6 +38,42 @@ activities = {
         "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
         "max_participants": 30,
         "participants": ["john@mergington.edu", "olivia@mergington.edu"]
+    },
+    "Basketball Team": {
+        "description": "Competitive basketball team and intramural games",
+        "schedule": "Mondays and Thursdays, 4:00 PM - 5:30 PM",
+        "max_participants": 15,
+        "participants": ["james@mergington.edu"]
+    },
+    "Tennis Club": {
+        "description": "Learn tennis skills and compete in matches",
+        "schedule": "Wednesdays, 3:30 PM - 5:00 PM",
+        "max_participants": 10,
+        "participants": ["ava@mergington.edu", "noah@mergington.edu"]
+    },
+    "Drama Club": {
+        "description": "Perform in theatrical productions and stage performances",
+        "schedule": "Tuesdays, 3:30 PM - 5:00 PM",
+        "max_participants": 25,
+        "participants": ["isabella@mergington.edu"]
+    },
+    "Art Studio": {
+        "description": "Painting, sculpture, and digital art creation",
+        "schedule": "Wednesdays and Fridays, 3:30 PM - 4:30 PM",
+        "max_participants": 18,
+        "participants": ["mia@mergington.edu", "lucas@mergington.edu"]
+    },
+    "Debate Team": {
+        "description": "Develop public speaking and critical thinking skills",
+        "schedule": "Mondays, 3:30 PM - 5:00 PM",
+        "max_participants": 16,
+        "participants": ["alexander@mergington.edu"]
+    },
+    "Science Club": {
+        "description": "Explore scientific experiments and discoveries",
+        "schedule": "Thursdays, 3:30 PM - 5:00 PM",
+        "max_participants": 20,
+        "participants": ["ethan@mergington.edu", "charlotte@mergington.edu"]
     }
 }
 
@@ -61,6 +97,11 @@ def signup_for_activity(activity_name: str, email: str):
 
     # Get the specific activity
     activity = activities[activity_name]
+
+
+    # Validate student is not already signed up
+    if email in activity["participants"]:
+        raise HTTPException(status_code=400, detail=f"Student {email} is already signed up for {activity_name}")
 
     # Add student
     activity["participants"].append(email)
